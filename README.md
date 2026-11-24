@@ -1,0 +1,22 @@
+# EchoMind Agent Runtime
+
+基于既有 EchoMind Python 客服后端开展的编排评测与可靠性改造。原始项目说明保存在 [README.upstream.md](README.upstream.md)。本快照不包含旧 Git 历史、本机环境文件、数据库或用户会话。
+
+## 本轮贡献
+
+- single / rule / multi 三种评测策略，共享本地工具和每任务 LLM 总预算；rule 是共同意图识别之后的静态路由。
+- 评测专用 OpenAI-compatible 消息适配器、工具契约一对一匹配、预算重复包装及异常金额修复。
+- 合成客服场景生成与三策略批量评测接口；最终任务完成质量尚待独立人审，未证明多 Agent 优势。真实运行记录和标注不随本次源码发布。
+- 24 组、960 次确定性模拟只读缓存请求，返回与参考一致；仅支持该模拟负载，不代表生产吞吐或回答质量。
+
+## 本地离线验证
+
+安装 requirements-dev.txt 后，在根目录执行 `python -m pytest tests -q`。生产启动及外部 Redis/Chroma 配置见原始说明。测试不需要真实模型密钥。
+
+可通过 `python -m evaluation.service_dataset --output-dir outputs/service-suite` 在本地生成合成测试用例。当前知识种子已修正部分未经证实的承诺。真实 Redis/Chroma 全链尚未联合验收。本次不发布历史实验记录或单独标注文件。
+
+## 来源与安全
+
+原目录 Git origin 指向 https://github.com/Biscuit-AI531/EchoMind 。既有意图识别、记忆和业务角色模块不计为本轮从零新增能力；保留原有来源信息，不对第三方代码额外授予许可证。
+
+真实凭据只通过本地被忽略的 .env 或运行进程注入。不要提交密钥、支付数据、用户日志或私有知识库。公开数据仅包含合成客服输入及实验记录。
