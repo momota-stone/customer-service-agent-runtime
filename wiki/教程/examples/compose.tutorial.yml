@@ -1,4 +1,4 @@
-# 在项目根目录执行，使用固定的独立项目名 echomind-tutorial。
+# 在项目根目录执行，使用固定的独立项目名 serviceagent-tutorial。
 # 本文件单独使用，不与根目录 Compose 叠加。
 services:
   redis:
@@ -26,7 +26,7 @@ services:
       timeout: 5s
       retries: 10
 
-  echomind:
+  serviceagent:
     build:
       context: ../../..
       dockerfile: Dockerfile
@@ -34,15 +34,15 @@ services:
     env_file:
       - ../../../.env
     environment:
-      ECHOMIND_ENV: development
-      ECHOMIND_API_TOKENS: ""
+      SERVICEAGENT_ENV: development
+      SERVICEAGENT_API_TOKENS: ""
       REDIS_URL: redis://redis:6379/0
       CHROMA_HOST: chromadb
       CHROMA_PORT: "8000"
-      CHROMA_PERSIST_DIRECTORY: /tmp/echomind-tutorial/chroma-fallback
-      ECHOMIND_SEED_DEMO_DOCS: "false"
-      EVAL_BASELINE_PATH: /tmp/echomind-tutorial/eval/baseline.json
-      ECHOMIND_SKILLS_DIR: /app/skills
+      CHROMA_PERSIST_DIRECTORY: /tmp/serviceagent-tutorial/chroma-fallback
+      SERVICEAGENT_SEED_DEMO_DOCS: "false"
+      EVAL_BASELINE_PATH: /tmp/serviceagent-tutorial/eval/baseline.json
+      SERVICEAGENT_SKILLS_DIR: /app/skills
       MCP_EXTERNAL_ENABLED: "false"
       INTENT_EMBEDDING_PROVIDER: local
       PROMETHEUS_PORT: "0"

@@ -152,7 +152,7 @@ def get_tools(self) -> Dict[str, AgentToolSpec]:
 
 ### 4.1 system 告诉模型“按什么规则处理”
 
-`_build_system_prompt(req)` 从 Technical 的固定提示开始，追加 Profile 的使命、处理顺序、输入输出要求、升级条件、实际工具范围，最后追加命中的 Skills。Technical 当前使用温度 `0.1`、最大输出 `1200` tokens；角色模型可通过 `ECHOMIND_TECHNICAL_MODEL` 覆盖默认模型。
+`_build_system_prompt(req)` 从 Technical 的固定提示开始，追加 Profile 的使命、处理顺序、输入输出要求、升级条件、实际工具范围，最后追加命中的 Skills。Technical 当前使用温度 `0.1`、最大输出 `1200` tokens；角色模型可通过 `SERVICEAGENT_TECHNICAL_MODEL` 覆盖默认模型。
 
 Profile 是带命名字段的 `@dataclass(frozen=True)` 对象。`frozen=True` 防止直接给配置字段重新赋值；启动时用 `dataclasses.replace(profile, model=...)` 生成替代配置。它描述角色的契约，不会自动给角色开权限。
 
@@ -202,7 +202,7 @@ if tools:
     ]
 resp = await asyncio.wait_for(
     self._client.messages.create(**request_kwargs),
-    timeout=max(1, _env_float("ECHOMIND_LLM_TIMEOUT_S", 15)),
+    timeout=max(1, _env_float("SERVICEAGENT_LLM_TIMEOUT_S", 15)),
 )
 ```
 
@@ -500,7 +500,7 @@ PYCODE
 修改已有 Skill 后，运行中的服务需要重新加载，使用 admin 身份：
 
 ```bash
-curl --noproxy '*' -X POST -H "Authorization: Bearer ${ECHOMIND_TUTORIAL_TOKEN:-}" \
+curl --noproxy '*' -X POST -H "Authorization: Bearer ${SERVICEAGENT_TUTORIAL_TOKEN:-}" \
   http://localhost:8000/skills/reload
 ```
 

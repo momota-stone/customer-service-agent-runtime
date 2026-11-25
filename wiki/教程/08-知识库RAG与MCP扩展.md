@@ -20,7 +20,7 @@
 
 **RAG** 可以按“先找资料，再据资料回答”来理解。模型无需把公司的每篇政策记在参数里；应用先从资料库检索相关片段，再把片段放入模型这一轮可读的输入。当前本地资料存在 ChromaDB 的 `knowledge_base` 集合中。
 
-**MCP** 是客户端与工具服务沟通的协议。比如 EchoMind 可以作为客户端访问配置允许的外部资料服务，也可以作为服务端，把本地知识搜索暴露给其他 MCP 客户端。
+**MCP** 是客户端与工具服务沟通的协议。比如 ServiceAgent 可以作为客户端访问配置允许的外部资料服务，也可以作为服务端，把本地知识搜索暴露给其他 MCP 客户端。
 
 RAG 是处理过程，MCP 是通信方式。当前本地 RAG 的 Python handler 直接调用本地管理器与 ChromaDB，名字 `MCPToolManager` 不表示这些调用自动经过了远端 MCP。
 
@@ -43,19 +43,19 @@ RAG 是处理过程，MCP 是通信方式。当前本地 RAG 的 Python handler 
 
 此实验会写入 `tutorial-login-policy`，所有使用该知识库的会话都可能检索到它。同 ID 重复上传会更新原资料。当前没有 HTTP 文档删除接口，所以本教程用独立数据卷实现整套练习数据的清理，具体命令在附录；不要删除整个正式知识集合来清理一篇教程文档。
 
-服务运行后，在项目根目录执行。开启鉴权时使用 admin 的 `ECHOMIND_TUTORIAL_TOKEN`。独立练习环境默认关闭鉴权，不需要设置这个变量。
+服务运行后，在项目根目录执行。开启鉴权时使用 admin 的 `SERVICEAGENT_TUTORIAL_TOKEN`。独立练习环境默认关闭鉴权，不需要设置这个变量。
 
 ```bash
-curl --noproxy '*' -i -H "Authorization: Bearer ${ECHOMIND_TUTORIAL_TOKEN:-}" \
+curl --noproxy '*' -i -H "Authorization: Bearer ${SERVICEAGENT_TUTORIAL_TOKEN:-}" \
   -H 'Content-Type: application/json' http://localhost:8000/knowledge/add \
   --data-binary @- <<'JSON'
 {"documents":[{"document_id":"tutorial-login-policy","title":"教程：登录异常处理规范","content":"出现 HTTP 401 时，先确认登录状态和令牌有效期。仍无法定位时，收集发生时间、客户端版本和 request_id。当前资料仅为教程示例，不代表真实企业政策。"}]}
 JSON
 
-curl --noproxy '*' -H "Authorization: Bearer ${ECHOMIND_TUTORIAL_TOKEN:-}" \
+curl --noproxy '*' -H "Authorization: Bearer ${SERVICEAGENT_TUTORIAL_TOKEN:-}" \
   http://localhost:8000/knowledge/stats
 
-curl --noproxy '*' -X POST -H "Authorization: Bearer ${ECHOMIND_TUTORIAL_TOKEN:-}" \
+curl --noproxy '*' -X POST -H "Authorization: Bearer ${SERVICEAGENT_TUTORIAL_TOKEN:-}" \
   --get --data-urlencode 'query=HTTP 401 登录规范' --data-urlencode 'top_k=3' \
   http://localhost:8000/search
 ```
@@ -400,9 +400,9 @@ if _eval_tool_manager is not None:
 
 ```mermaid
 flowchart LR
-    A[EchoMind Agent] --> C[StandardMCPClient]
+    A[ServiceAgent Agent] --> C[StandardMCPClient]
     C --> X[外部MCP工具服务]
-    O[其他MCP客户端] --> S[EchoMind /mcp/]
+    O[其他MCP客户端] --> S[ServiceAgent /mcp/]
     S --> M[本地manager.call]
     M --> K[知识库knowledge_search]
 ```
@@ -440,7 +440,7 @@ stdio 配置会启动指定 command/args 的子进程，客户端只传受控环
 
 ### 11.2 本地服务端：标准协议访问 /mcp/，不按普通 REST 直接发 query
 
-[tooling/mcp_server.py](../../tooling/mcp_server.py) 用 FastMCP 声明只读工具 `search_local_knowledge` 和资源 `echomind://knowledge/stats`，HTTP 应用挂载在 `http://localhost:8000/mcp/`。`search_local_knowledge` 使用 Pydantic/Field 限制 query 1—2000 字符和 top_k 1—20 的严格整数。
+[tooling/mcp_server.py](../../tooling/mcp_server.py) 用 FastMCP 声明只读工具 `search_local_knowledge` 和资源 `serviceagent://knowledge/stats`，HTTP 应用挂载在 `http://localhost:8000/mcp/`。`search_local_knowledge` 使用 Pydantic/Field 限制 query 1—2000 字符和 top_k 1—20 的严格整数。
 
 调用该工具时执行：
 
@@ -453,7 +453,7 @@ if not result.success or result.error:
 return KnowledgeSearchResult(results=result.data)
 ```
 
-这里直接进入底层 manager.call，**没有模型改写和重排**。返回 `KnowledgeSearchResult` 由 MCP SDK 包装成协议结果，其结构化正文是 `{"results":[...],"source":"echomind_knowledge"}`。stats resource 返回当前片段数量，是资源读取，不是聊天回答。
+这里直接进入底层 manager.call，**没有模型改写和重排**。返回 `KnowledgeSearchResult` 由 MCP SDK 包装成协议结果，其结构化正文是 `{"results":[...],"source":"serviceagent_knowledge"}`。stats resource 返回当前片段数量，是资源读取，不是聊天回答。
 
 MCP 不是 `POST /mcp/ {"query":...}` 的 REST 约定。客户端需 initialize，发现 tools，再按工具调用协议提供 name 和 arguments；下面 SDK 实验替你完成协议消息和传输管理。启用应用 Token 时同样要带有效身份。Host/Origin 校验由传输安全配置处理；自定义域名需显式配置允许名单，localhost 实验按默认设置即可。
 
@@ -462,21 +462,21 @@ MCP 不是 `POST /mcp/ {"query":...}` 的 REST 约定。客户端需 initialize�
 外部客户端的连接状态与工具别名通过以下接口查看，要求 admin：
 
 ```bash
-curl --noproxy '*' -H "Authorization: Bearer ${ECHOMIND_TUTORIAL_TOKEN:-}" \
+curl --noproxy '*' -H "Authorization: Bearer ${SERVICEAGENT_TUTORIAL_TOKEN:-}" \
   http://localhost:8000/integrations/mcp
 ```
 
 在 `servers[].state` 为 `connected` 且 `tools` 中已出现目标名称时，把下列 `name` 换成返回的本地别名。参数按该远端工具的 schema 填写；下面对应仓库默认 Microsoft Learn 搜索工具配置，外部连接需要 `MCP_EXTERNAL_ENABLED=true`：
 
 ```bash
-curl --noproxy '*' -H "Authorization: Bearer ${ECHOMIND_TUTORIAL_TOKEN:-}" \
+curl --noproxy '*' -H "Authorization: Bearer ${SERVICEAGENT_TUTORIAL_TOKEN:-}" \
   -H 'Content-Type: application/json' http://localhost:8000/integrations/mcp/call \
   --data-binary '{"name":"mcp_mslearn_microsoft_docs_search","arguments":{"query":"HTTP 401 authentication"}}'
 ```
 
 直接调试入口不请求聊天模型。返回 `success=false` 就先检查连接、白名单、远端错误和参数，不要先改 Agent 提示词。默认配置文件的存在不能代替实际连接结果；关闭外部客户端时 `servers` 为空。
 
-项目还提供反向能力：把自己的知识库通过 [tooling/mcp_server.py](../../tooling/mcp_server.py) 暴露给其他 MCP 客户端。地址是 `http://localhost:8000/mcp/`，包含只读工具 `search_local_knowledge` 和资源 `echomind://knowledge/stats`。它使用标准 MCP 初始化与调用流程，不能当作普通 REST 接口直接 POST `{query: ...}`。
+项目还提供反向能力：把自己的知识库通过 [tooling/mcp_server.py](../../tooling/mcp_server.py) 暴露给其他 MCP 客户端。地址是 `http://localhost:8000/mcp/`，包含只读工具 `search_local_knowledge` 和资源 `serviceagent://knowledge/stats`。它使用标准 MCP 初始化与调用流程，不能当作普通 REST 接口直接 POST `{query: ...}`。
 
 下面使用已安装的 MCP SDK 连接本地服务；需要当前后端正常运行，但不需要外部 MCP 连接或真实聊天模型调用。启用鉴权时可使用有效 user 或 admin Token：
 
@@ -490,8 +490,8 @@ from mcp.client.streamable_http import streamable_http_client
 
 async def main():
     headers = {}
-    if os.getenv("ECHOMIND_TUTORIAL_TOKEN"):
-        headers["Authorization"] = "Bearer " + os.environ["ECHOMIND_TUTORIAL_TOKEN"]
+    if os.getenv("SERVICEAGENT_TUTORIAL_TOKEN"):
+        headers["Authorization"] = "Bearer " + os.environ["SERVICEAGENT_TUTORIAL_TOKEN"]
     async with httpx.AsyncClient(headers=headers, timeout=30, trust_env=False) as http:
         async with streamable_http_client("http://localhost:8000/mcp/", http_client=http) as (read, write, _):
             async with ClientSession(read, write) as session:
@@ -501,7 +501,7 @@ async def main():
                 result = await session.call_tool("search_local_knowledge", {"query": "HTTP 401 登录规范", "top_k": 3})
                 assert not result.isError, result
                 print("results:", result.structuredContent)
-                stats = await session.read_resource("echomind://knowledge/stats")
+                stats = await session.read_resource("serviceagent://knowledge/stats")
                 print("stats:", stats.contents[0].text)
 
 asyncio.run(main())

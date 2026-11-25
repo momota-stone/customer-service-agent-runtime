@@ -110,7 +110,7 @@ def main():
     report = score_contracts(read_jsonl(args.cases), read_jsonl(args.results))
     args.output_dir.mkdir(parents=True, exist_ok=False)
     (args.output_dir / "contracts.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-    manifest = {"schema_version": "echomind-contract-report-v1", "model_calls": 0,
+    manifest = {"schema_version": "serviceagent-contract-report-v1", "model_calls": 0,
                 "cases_sha256": hashlib.sha256(args.cases.read_bytes()).hexdigest(),
                 "results_sha256": hashlib.sha256(args.results.read_bytes()).hexdigest(),
                 "scorer_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),

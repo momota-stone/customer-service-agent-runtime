@@ -1,7 +1,7 @@
 [
   {
-    "title": "EchoMind 产品介绍",
-    "content": "EchoMind 是面向客服场景的 Agent 工程项目。代码提供意图识别、角色路由、按需知识检索、多轮记忆、监控与评测接口。具备这些模块不等于已证明生产服务质量、任务成功率或高并发能力；实际效果需要独立任务集和运行记录验证。本文件仅为演示知识，不是商业服务承诺。"
+    "title": "ServiceAgent 产品介绍",
+    "content": "ServiceAgent 是面向客服场景的 Agent 工程项目。代码提供意图识别、角色路由、按需知识检索、多轮记忆、监控与评测接口。具备这些模块不等于已证明生产服务质量、任务成功率或高并发能力；实际效果需要独立任务集和运行记录验证。本文件仅为演示知识，不是商业服务承诺。"
   },
   {
     "title": "订阅计划与定价",
@@ -9,7 +9,7 @@
   },
   {
     "title": "API 接入指南",
-    "content": "EchoMind Python后端提供POST /chat，请求体包含message、user_id和conv_id；响应模型包含response、intent和agent_type等字段。模型凭据由部署环境配置，不能把模型供应商密钥当作可公开的业务接口凭据。仓库没有经本轮核验的账号注册或控制台自助生成密钥流程，不应引导用户进入虚构页面。具体字段、鉴权与部署要求以api/main.py、实际部署配置及/docs为准。"
+    "content": "ServiceAgent Python后端提供POST /chat，请求体包含message、user_id和conv_id；响应模型包含response、intent和agent_type等字段。模型凭据由部署环境配置，不能把模型供应商密钥当作可公开的业务接口凭据。仓库没有经本轮核验的账号注册或控制台自助生成密钥流程，不应引导用户进入虚构页面。具体字段、鉴权与部署要求以api/main.py、实际部署配置及/docs为准。"
   },
   {
     "title": "常见集成问题",

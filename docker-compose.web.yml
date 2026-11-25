@@ -3,9 +3,9 @@
 services:
   frontend:
     build:
-      context: ../EchoMindFrontend
+      context: ../ServiceAgentFrontend
       dockerfile: Dockerfile
-    container_name: echomind-web
+    container_name: serviceagent-web
     environment:
       PYTHON_API_URL: /api/python
       JAVA_API_URL: /api/java
@@ -14,19 +14,19 @@ services:
     volumes:
       - ./config/nginx/frontend.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      echomind:
+      serviceagent:
         condition: service_healthy
-      echomind-java:
+      serviceagent-java:
         condition: service_started
     restart: unless-stopped
     networks:
-      - echomind-network
+      - serviceagent-network
 
-  echomind-java:
+  serviceagent-java:
     build:
-      context: ../EchoMindJava
+      context: ../ServiceAgentJava
       dockerfile: Dockerfile
-    container_name: echomind-java
+    container_name: serviceagent-java
     ports:
       - "127.0.0.1:8080:8080"
     environment:
@@ -40,13 +40,13 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD:-REPLACE_WITH_YOUR_LOCAL_SECRET}
       CHROMA_HOST: http://chromadb
       CHROMA_PORT: "8000"
-      ECHOMIND_DATA_DIR: /app/data/java
+      SERVICEAGENT_DATA_DIR: /app/data/java
       KNOWLEDGE_STORE_PATH: /app/data/java/knowledge-store.json
       MEMORY_STORE_PATH: /app/data/java/memory-store.json
-      ECHOMIND_SKILLS_DIR: /app/skills
+      SERVICEAGENT_SKILLS_DIR: /app/skills
     volumes:
-      - echomind-java-data:/app/data
-      - ../EchoMindJava/skills:/app/skills:ro
+      - serviceagent-java-data:/app/data
+      - ../ServiceAgentJava/skills:/app/skills:ro
     depends_on:
       redis:
         condition: service_healthy
@@ -54,7 +54,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     networks:
-      - echomind-network
+      - serviceagent-network
 
   nginx:
     volumes:
@@ -64,6 +64,6 @@ services:
         condition: service_started
 
 volumes:
-  echomind-java-data:
+  serviceagent-java-data:
     external: true
-    name: ${ECHOMIND_JAVA_DATA_VOLUME:-echomindjava_app-data}
+    name: ${SERVICEAGENT_JAVA_DATA_VOLUME:-serviceagentjava_app-data}

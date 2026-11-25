@@ -1,6 +1,6 @@
 ## 1\. 项目定位
 
-EchoMind 是一个面向复杂客服任务的多 Agent 客服。
+ServiceAgent 是一个面向复杂客服任务的多 Agent 客服。
 
 它解决的不是"能聊天"，而是这类真实问题：
 
@@ -112,7 +112,7 @@ async def lifespan(app: FastAPI):
 用户消息 -> 单一 LLM -> 回复
 ```
 
-EchoMind 是：
+ServiceAgent 是：
 
 ```Plaintext
 用户消息 -> 记忆 -> 意图 -> 路由 -> Agent 执行（按需调用知识库等工具）-> 回复 -> 回写 -> 评测 -> 监控
@@ -299,7 +299,7 @@ def _monitor_degraded(self, agent_type: AgentType) -> bool:
     if agent_type in (AgentType.GENERAL, AgentType.ESCALATION):
         return False
     agents = self._pool.get(agent_type, [])
-    threshold = _env_float("ECHOMIND_MONITOR_FALLBACK_PENALTY", self.MONITOR_FALLBACK_PENALTY)  # 默认 0.5
+    threshold = _env_float("SERVICEAGENT_MONITOR_FALLBACK_PENALTY", self.MONITOR_FALLBACK_PENALTY)  # 默认 0.5
     penalties = [agent.stats.monitor_penalty for agent in agents]
     return min(penalties) >= min(max(threshold, 0.0), 0.9)
 ```
@@ -370,7 +370,7 @@ def _needs_clarification(req: Request) -> bool:
 
 文件：`core/intent_recognizer.py`
 
-EchoMind 的意图识别不是单模型分类，而是三路融合，并且带缓存和在线学习能力。核心类是 `IntentRecognizer`。
+ServiceAgent 的意图识别不是单模型分类，而是三路融合，并且带缓存和在线学习能力。核心类是 `IntentRecognizer`。
 
 #### 4\.1\.1 支持的意图分类（`IntentCategory`）
 
@@ -518,7 +518,7 @@ self._pool: Dict[AgentType, List[BaseAgent]] = {
 `_make_agent()` 支持按环境变量覆盖每个角色的模型：
 
 ```Python
-env_name = f"ECHOMIND_{agent_cls.agent_type.value.upper()}_MODEL"  # 例如 ECHOMIND_TECHNICAL_MODEL
+env_name = f"SERVICEAGENT_{agent_cls.agent_type.value.upper()}_MODEL"  # 例如 SERVICEAGENT_TECHNICAL_MODEL
 model = os.getenv(env_name, "").strip() or profile.model
 ```
 
@@ -959,13 +959,13 @@ def prompt_for(self, message: str, agent_type: Optional[str] = None) -> str:
     if not blocks:
         return ""
     return (
-        "以下是当前请求可用的 EchoMind Skills。"
+        "以下是当前请求可用的 ServiceAgent Skills。"
         "请优先遵循这些业务规则；如果与系统角色冲突，以系统角色和安全边界为准。\n\n"
         + "\n\n".join(blocks)
     )
 ```
 
-两层长度控制：单个 Skill 最多 3200 字符（`Skill.to_prompt_block(max_chars=3200)`），全部注入内容加起来不超过 `ECHOMIND_SKILLS_MAX_PROMPT_CHARS`（默认 5000）。超出预算会直接截断并追加 `"\n..."`，保证不会无限挤占对话上下文。
+两层长度控制：单个 Skill 最多 3200 字符（`Skill.to_prompt_block(max_chars=3200)`），全部注入内容加起来不超过 `SERVICEAGENT_SKILLS_MAX_PROMPT_CHARS`（默认 5000）。超出预算会直接截断并追加 `"\n..."`，保证不会无限挤占对话上下文。
 
 `matches()` 的判断顺序：`enabled=False` 直接跳过 → 声明了 `agents` 但当前 Agent 不在列表里则跳过 → 没有声明 `keywords` 则视为全局 Skill，任何请求都会注入 → 否则只有消息里命中至少一个关键词才注入。这意味着：**Skills 不是给所有 Agent 全量注入的，而是"按角色 \+ 按关键词"精确匹配后才拼进 system prompt**。
 
@@ -1354,7 +1354,7 @@ ALERT_WEBHOOK_URL=
 
 ## 7\. 总结
 
-EchoMind 的核心不是"会聊天"，而是把客服系统里最关键的几件事工程化了：
+ServiceAgent 的核心不是"会聊天"，而是把客服系统里最关键的几件事工程化了：
 
 - 识别问题（三路融合 \+ 加权投票 \+ 细粒度纠偏）
 

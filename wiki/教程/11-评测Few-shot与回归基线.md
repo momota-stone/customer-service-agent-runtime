@@ -37,8 +37,8 @@ import time
 import urllib.request
 
 headers = {"Content-Type": "application/json"}
-if os.getenv("ECHOMIND_TUTORIAL_TOKEN"):
-    headers["Authorization"] = "Bearer " + os.environ["ECHOMIND_TUTORIAL_TOKEN"]
+if os.getenv("SERVICEAGENT_TUTORIAL_TOKEN"):
+    headers["Authorization"] = "Bearer " + os.environ["SERVICEAGENT_TUTORIAL_TOKEN"]
 opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 case = {
     "intent_cases": [],

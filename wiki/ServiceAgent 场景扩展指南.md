@@ -1,6 +1,6 @@
-# EchoMind 场景扩展指南
+# ServiceAgent 场景扩展指南
 
-做这个项目的初心就是适合大家秋招面试但又不想太烂大街，所以这几天我整理了下不同可扩展的场景提供给大家使用。最后祝大家秋招实习顺利。有任何问题随时私信我或者在问答区问问题。[EchoMind问答区](https://my.feishu.cn/wiki/ZKVhw5tabi1DaGkfxZhca4uGnrh)
+做这个项目的初心就是适合大家秋招面试但又不想太烂大街，所以这几天我整理了下不同可扩展的场景提供给大家使用。最后祝大家秋招实习顺利。有任何问题随时私信我或者在问答区问问题。[ServiceAgent问答区](https://my.feishu.cn/wiki/ZKVhw5tabi1DaGkfxZhca4uGnrh)
 
 ## **当前架构可复用能力总览**
 
