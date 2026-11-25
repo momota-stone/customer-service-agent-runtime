@@ -1,4 +1,4 @@
-# EchoMind Agent Runtime
+ Agent Runtime
 
 基于既有 EchoMind Python 客服后端开展的编排评测与可靠性改造。原始项目说明保存在 [README.upstream.md](README.upstream.md)。本快照不包含旧 Git 历史、本机环境文件、数据库或用户会话。
 
